@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pg from "pg";
@@ -48,12 +48,12 @@ function verifyToken(token) {
 function auth(req, res, next) {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "");
   const user = verifyToken(token);
-  if (!user) return res.status(401).json({ message: "กรุณาเข้าสู่ระบบเจ้าหน้าที่" });
+  if (!user) return res.status(401).json({ message: "เธเธฃเธธเธ“เธฒเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธเน€เธเนเธฒเธซเธเนเธฒเธ—เธตเน" });
   req.user = user;
   next();
 }
 function roles(...allowed) {
-  return (req, res, next) => allowed.includes(req.user?.role) ? next() : res.status(403).json({ message: "ไม่มีสิทธิ์ดำเนินการ" });
+  return (req, res, next) => allowed.includes(req.user?.role) ? next() : res.status(403).json({ message: "เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเธ”เธณเน€เธเธดเธเธเธฒเธฃ" });
 }
 
 const allowedTypes = new Set(["traffic_accident", "fire", "medical", "crime", "other"]);
@@ -67,43 +67,43 @@ app.get("/api/health", async (_req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "");
-  if (!username || !password) return res.status(400).json({ message: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" });
+  if (!username || !password) return res.status(400).json({ message: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธเธนเนเนเธเนเนเธฅเธฐเธฃเธซเธฑเธชเธเนเธฒเธ" });
   try {
     const result = await pool.query("SELECT id, username, display_name, role, password_hash, active FROM users WHERE username = $1", [username]);
     const user = result.rows[0];
-    if (!user || !user.active || !verifyPassword(password, user.password_hash)) return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+    if (!user || !user.active || !verifyPassword(password, user.password_hash)) return res.status(401).json({ message: "เธเธทเนเธญเธเธนเนเนเธเนเธซเธฃเธทเธญเธฃเธซเธฑเธชเธเนเธฒเธเนเธกเนเธ–เธนเธเธ•เนเธญเธ" });
     const safeUser = { id: user.id, username: user.username, display_name: user.display_name, role: user.role };
     res.json({ token: signToken(safeUser), user: safeUser });
-  } catch (error) { console.error(error); res.status(500).json({ message: "เข้าสู่ระบบไม่สำเร็จ" }); }
+  } catch (error) { console.error(error); res.status(500).json({ message: "เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธเนเธกเนเธชเธณเน€เธฃเนเธ" }); }
 });
 
 app.get("/api/auth/me", auth, (req, res) => res.json({ user: req.user }));
 
 app.post("/api/incidents", async (req, res) => {
   const { type, description, latitude, longitude, address } = req.body;
-  if (!allowedTypes.has(type)) return res.status(400).json({ message: "ประเภทเหตุไม่ถูกต้อง" });
-  if (typeof description !== "string" || description.trim().length < 3) return res.status(400).json({ message: "กรุณากรอกรายละเอียดเหตุ" });
+  if (!allowedTypes.has(type)) return res.status(400).json({ message: "เธเธฃเธฐเน€เธ เธ—เน€เธซเธ•เธธเนเธกเนเธ–เธนเธเธ•เนเธญเธ" });
+  if (typeof description !== "string" || description.trim().length < 3) return res.status(400).json({ message: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เน€เธซเธ•เธธ" });
   const lat = Number(latitude), lng = Number(longitude);
-  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) return res.status(400).json({ message: "พิกัดไม่ถูกต้อง" });
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) return res.status(400).json({ message: "เธเธดเธเธฑเธ”เนเธกเนเธ–เธนเธเธ•เนเธญเธ" });
   try {
     const result = await pool.query(`INSERT INTO incidents (incident_number, type, description, latitude, longitude, address) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [makeIncidentNumber(), type, description.trim(), lat, lng, typeof address === "string" ? address.trim() : null]);
     res.status(201).json(result.rows[0]);
-  } catch (error) { console.error(error); res.status(500).json({ message: "บันทึกเหตุไม่สำเร็จ" }); }
+  } catch (error) { console.error(error); res.status(500).json({ message: "เธเธฑเธเธ—เธถเธเน€เธซเธ•เธธเนเธกเนเธชเธณเน€เธฃเนเธ" }); }
 });
 
 app.get("/api/incidents", auth, async (_req, res) => {
   try { const result = await pool.query("SELECT * FROM incidents ORDER BY created_at DESC LIMIT 200"); res.json(result.rows); }
-  catch (error) { console.error(error); res.status(500).json({ message: "ไม่สามารถโหลดรายการเหตุได้" }); }
+  catch (error) { console.error(error); res.status(500).json({ message: "เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธฃเธฒเธขเธเธฒเธฃเน€เธซเธ•เธธเนเธ”เน" }); }
 });
 
 app.patch("/api/incidents/:id/status", auth, roles("ADMIN", "OFFICER"), async (req, res) => {
   const status = String(req.body?.status || "");
-  if (!allowedStatuses.has(status)) return res.status(400).json({ message: "สถานะไม่ถูกต้อง" });
+  if (!allowedStatuses.has(status)) return res.status(400).json({ message: "เธชเธ–เธฒเธเธฐเนเธกเนเธ–เธนเธเธ•เนเธญเธ" });
   try {
     const result = await pool.query("UPDATE incidents SET status=$1, updated_at=NOW() WHERE id=$2 RETURNING *", [status, req.params.id]);
-    if (!result.rows[0]) return res.status(404).json({ message: "ไม่พบเหตุการณ์" });
+    if (!result.rows[0]) return res.status(404).json({ message: "เนเธกเนเธเธเน€เธซเธ•เธธเธเธฒเธฃเธ“เน" });
     res.json(result.rows[0]);
-  } catch (error) { console.error(error); res.status(500).json({ message: "เปลี่ยนสถานะไม่สำเร็จ" }); }
+  } catch (error) { console.error(error); res.status(500).json({ message: "เน€เธเธฅเธตเนเธขเธเธชเธ–เธฒเธเธฐเนเธกเนเธชเธณเน€เธฃเนเธ" }); }
 });
 
 app.get("/api/dashboard/summary", auth, async (_req, res) => {
@@ -114,7 +114,8 @@ app.get("/api/dashboard/summary", auth, async (_req, res) => {
       pool.query(`SELECT d::date AS date, COUNT(i.id)::int AS count FROM generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, INTERVAL '1 day') d LEFT JOIN incidents i ON i.created_at::date = d::date GROUP BY d::date ORDER BY d::date`)
     ]);
     res.json({ ...totals.rows[0], by_type: byType.rows, by_day: byDay.rows });
-  } catch (error) { console.error(error); res.status(500).json({ message: "โหลดสถิติไม่สำเร็จ" }); }
+  } catch (error) { console.error(error); res.status(500).json({ message: "เนเธซเธฅเธ”เธชเธ–เธดเธ•เธดเนเธกเนเธชเธณเน€เธฃเนเธ" }); }
 });
 
-app.listen(port, () => console.log(`Incident API running at http://localhost:${port}`));
+app.listen(port, "0.0.0.0", () => console.log(`Incident API running at http://localhost:${port}`));
+
